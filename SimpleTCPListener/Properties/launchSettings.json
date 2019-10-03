@@ -1,0 +1,8 @@
+{
+  "profiles": {
+    "SimpleTCPListener": {
+      "commandName": "Project",
+      "commandLineArgs": "-p 5000 -a localhost -o ./hoooby.log"
+    }
+  }
+}
