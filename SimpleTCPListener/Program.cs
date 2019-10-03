@@ -72,6 +72,69 @@ namespace SimpleTCPListener
 			CommandOption<string> outputPathOption,
 			CancellationToken token)
 		{
+			var (ipAddress, port, outputPath) = ParseOptions(
+				ipOption,
+				portOption,
+				outputPathOption);
+
+			Console.WriteLine($"Listening to {ipAddress} on port {port}...");
+			TcpListener server = null;
+			try
+			{
+				server = new TcpListener(ipAddress, port);
+				server.Start();
+
+				var buffer = new byte[256];
+
+				while (true)
+				{
+					Console.Write("Waiting for connection... ");
+
+					var client = server.AcceptTcpClient();
+					Console.WriteLine($"Connected!{nl}");
+
+					string data = null;
+
+					var stream = client.GetStream();
+
+					int i;
+					while ((i = stream.Read(buffer, 0, buffer.Length)) != 0)
+					{
+						data += Encoding.UTF8.GetString(buffer, 0, i);
+						Console.Write($"\rReceived: {data.Length} characters");
+					}
+
+					Console.WriteLine($"{nl}Disconnected!{nl}");
+					Console.WriteLine($"Received:{nl}{data}{nl}");
+
+					client.Close();
+					data += Environment.NewLine;
+					await File.AppendAllTextAsync(
+						outputPath,
+						data,
+						Encoding.UTF8,
+						token);
+				}
+			}
+			catch (SocketException e)
+			{
+				Console.WriteLine($"Socket exception: {e}");
+			}
+			finally
+			{
+				server?.Stop();
+			}
+
+			Console.WriteLine("Press any key to exit...");
+			Console.ReadKey(false);
+			return 0;
+		}
+
+		public static (IPAddress, int, string) ParseOptions(
+			CommandOption<string> ipOption,
+			CommandOption<int> portOption,
+			CommandOption<string> outputPathOption)
+		{
 			IPAddress ipAddress;
 			if (ipOption.HasValue())
 			{
@@ -132,57 +195,7 @@ namespace SimpleTCPListener
 				outputPath = DefaultOutputPath;
 			}
 
-			Console.WriteLine($"Listening to {ipAddress} on port {port}...");
-			TcpListener server = null;
-			try
-			{
-				server = new TcpListener(ipAddress, port);
-				server.Start();
-
-				var buffer = new byte[256];
-
-				while (true)
-				{
-					Console.Write("Waiting for connection... ");
-
-					var client = server.AcceptTcpClient();
-					Console.WriteLine($"Connected!{nl}");
-
-					string data = null;
-
-					var stream = client.GetStream();
-
-					int i;
-					while ((i = stream.Read(buffer, 0, buffer.Length)) != 0)
-					{
-						data += Encoding.UTF8.GetString(buffer, 0, i);
-						Console.Write($"\rReceived: {data.Length} characters");
-					}
-
-					Console.WriteLine($"{nl}Disconnected!{nl}");
-					Console.WriteLine($"Received:{nl}{data}{nl}");
-
-					client.Close();
-					data += Environment.NewLine;
-					await File.AppendAllTextAsync(
-						outputPath,
-						data,
-						Encoding.UTF8,
-						token);
-				}
-			}
-			catch (SocketException e)
-			{
-				Console.WriteLine($"Socket exception: {e}");
-			}
-			finally
-			{
-				server?.Stop();
-			}
-
-			Console.WriteLine("Press any key to exit...");
-			Console.ReadKey(false);
-			return 0;
+			return (ipAddress, port, outputPath);
 		}
 	}
 }
