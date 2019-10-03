@@ -151,7 +151,7 @@ namespace SimpleTCPListener
 						{
 							Console.WriteLine(
 								$"Invalid IP Address/hostname: {ipOption.ParsedValue}. Using default: {DefaultAddress}");
-							ipAddress = IPAddress.Parse("127.0.0.1");
+							ipAddress = IPAddress.Parse(DefaultAddress);
 						}
 						else
 						{
@@ -162,13 +162,13 @@ namespace SimpleTCPListener
 					{
 						Console.WriteLine(
 							$"Invalid IP Address/hostname: {ipOption.ParsedValue}. Using default: {DefaultAddress}");
-						ipAddress = IPAddress.Parse("127.0.0.1");
+						ipAddress = IPAddress.Parse(DefaultAddress);
 					}
 				}
 			}
 			else
 			{
-				ipAddress = IPAddress.Parse("127.0.0.1");
+				ipAddress = IPAddress.Parse(DefaultAddress);
 			}
 
 			var port = portOption.HasValue()
